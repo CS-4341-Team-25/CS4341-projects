@@ -15,7 +15,7 @@ class Agent(object):
     """Abstract agent class"""
 
     # Class constructor.
-    #
+    #agent.Agagent.Agentent
     # PARAM [string] name: the name of this player
     def __init__(self, name):
         """Class constructor"""

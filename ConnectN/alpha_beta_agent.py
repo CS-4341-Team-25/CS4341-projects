@@ -16,6 +16,7 @@ class AlphaBetaAgent(agent.Agent):
         super().__init__(name)
         # Max search depth
         self.max_depth = max_depth
+        self.count = 0
 
     # Pick a column.
     #
@@ -46,7 +47,8 @@ class AlphaBetaAgent(agent.Agent):
         return bestCol
 
     def max_value(self, brd):
-        if (brd.get_outcome() != 0):
+        # game is over, it is a terminal state, check utility
+        if ((len(brd.free_cols()) == 0) or (brd.get_outcome())) != 0:
             return self.utility(brd)
         v = float('-inf')
         for successor in self.get_successors(brd):
@@ -55,23 +57,41 @@ class AlphaBetaAgent(agent.Agent):
         return v
 
     def min_value(self, brd):
-        if (brd.get_outcome() != 0):
+        # game is over, it is a terminal state, check utility
+        # test1 = len(brd.free_cols())
+        # test2 = brd.get_outcome()
+        if (len(brd.free_cols()) == 0 or brd.get_outcome() != 0):
             return self.utility(brd)
         v = float('inf')
         for [successor, col] in self.get_successors(brd):
             v = min(v, self.max_value(successor))
         return v
 
+
     def utility(self, brd):
         i = 0
         for row in brd.board:
             for elem in row:
-                if i != 0:
+                if elem != 0:
                     i+=1
         
         pieces_played = i/2
 
-        return brd.w * brd.h - pieces_played
+        utility = brd.w * brd.h - pieces_played
+
+        # if there is no winner, tie, return 0
+        if brd.get_outcome() == 0:
+            utility = 0
+        # if there is a winner, and its not us, return -1 * utility
+        elif brd.get_outcome() != self.player:
+            utility = -utility
+
+        self.count += 1
+
+        if not self.count%1000:
+            print("utility:\t" + str(utility) + "\t count:\t" + str(self.count))
+        return utility
+
 
     
     # Get the successors of the given board.
