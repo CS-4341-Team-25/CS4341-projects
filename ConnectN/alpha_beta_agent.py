@@ -1,10 +1,10 @@
 import math
 import agent
+from metrics import Metrics
 
 ###########################
 # Alpha-Beta Search Agent #
 ###########################
-
 class AlphaBetaAgent(agent.Agent):
     """Agent that uses alpha-beta search"""
 
@@ -17,6 +17,7 @@ class AlphaBetaAgent(agent.Agent):
         # Max search depth
         self.max_depth = max_depth
         self.count = 0
+        self.metrics = Metrics()
 
     # Pick a column.
     #
@@ -36,7 +37,8 @@ class AlphaBetaAgent(agent.Agent):
     # PARAM [board.Board]
     # RETURN [int]: the column where the token must be added
     def minimax_decision(self, brd): 
-        
+        print("I am think ...")
+        self.metrics.start_timer()
         bestScore = float('-inf')
         bestCol = 0
         for newBrd,newCol in self.get_successors(brd):
@@ -44,8 +46,15 @@ class AlphaBetaAgent(agent.Agent):
             if nextScore > bestScore:
                 bestScore = nextScore
                 bestCol = newCol
+        elapsed_time = self.metrics.end_timer()
+        print("Think complete! Max elapsed time: ", self.metrics.max_elapsed)
+        print("Avg nodes/s ", self.metrics.getNodePerSec())
+        print("Avg time per move ", self.metrics.getAvgTimePerMove())
+        print("Moves to win ", self.metrics.moves)
         return bestCol
 
+
+    #def max_value(self, brd, alpha, beta)
     def max_value(self, brd):
         # game is over, it is a terminal state, check utility
         if ((len(brd.free_cols()) == 0) or (brd.get_outcome())) != 0:
@@ -53,6 +62,9 @@ class AlphaBetaAgent(agent.Agent):
         v = float('-inf')
         for successor in self.get_successors(brd):
             v = max(v, self.min_value(successor[0]))
+            # if v >= beta:
+            #   return v
+            # alpha = max()
             # successor is [list of (board.Board, int)]
         return v
 
@@ -86,10 +98,8 @@ class AlphaBetaAgent(agent.Agent):
         elif brd.get_outcome() != self.player:
             utility = -utility
 
-        self.count += 1
+        self.metrics.count()
 
-        if not self.count%1000:
-            print("utility:\t" + str(utility) + "\t count:\t" + str(self.count))
         return utility
 
 
