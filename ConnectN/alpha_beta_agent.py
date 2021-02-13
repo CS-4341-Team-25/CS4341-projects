@@ -29,15 +29,36 @@ class AlphaBetaAgent(agent.Agent):
         """Search for the best move (choice of column for the token)"""
         # Your code here
         cols = brd.free_cols()
-        choice = self.minimax_decision(brd)
+        print("I am think ...")
+        choice = self.alphabeta_decision(brd)
+        self.print_metrics()
         return choice
     
+    # ALPHABETA Algorithm 
+    #
+    # PARAM [board.Board]
+    # RETURN [int]: the column where the token must be added
+    def alphabeta_decision(self, brd): 
+        self.metrics.start_timer()
+        bestScore = float('-inf')
+        bestCol = 0
+        cols_checked = 0
+        for newBrd,newCol in self.get_successors(brd):
+            cols_checked += 1
+            
+            nextScore = self.min_value(newBrd, float('-inf'), float('inf'))
+            if nextScore > bestScore:
+                bestScore = nextScore
+                bestCol = newCol
+            print("Checked " + str(cols_checked) + " node(s)")
+        elapsed_time = self.metrics.end_timer()
+        return bestCol
+
     # Minimax Algorithm 
     #
     # PARAM [board.Board]
     # RETURN [int]: the column where the token must be added
     def minimax_decision(self, brd): 
-        print("I am think ...")
         self.metrics.start_timer()
         bestScore = float('-inf')
         bestCol = 0
@@ -47,39 +68,48 @@ class AlphaBetaAgent(agent.Agent):
                 bestScore = nextScore
                 bestCol = newCol
         elapsed_time = self.metrics.end_timer()
+        return bestCol
+
+    # Print statements for measuring metrics for each move and game overall
+    def print_metrics(self):
         print("Think complete! Max elapsed time: ", self.metrics.max_elapsed)
         print("Avg nodes/s ", self.metrics.getNodePerSec())
         print("Avg time per move ", self.metrics.getAvgTimePerMove())
         print("Moves to win ", self.metrics.moves)
-        return bestCol
+        print("Total nodes checked: ", self.metrics.total_nodes_checked)
 
-
-    #def max_value(self, brd, alpha, beta)
-    def max_value(self, brd):
+    def max_value(self, brd, alpha, beta):
+    #def max_value(self, brd):
         # game is over, it is a terminal state, check utility
+        local_alpha = alpha
+        local_beta = beta
         if ((len(brd.free_cols()) == 0) or (brd.get_outcome())) != 0:
             return self.utility(brd)
         v = float('-inf')
         for successor in self.get_successors(brd):
-            v = max(v, self.min_value(successor[0]))
-            # if v >= beta:
-            #   return v
-            # alpha = max()
-            # successor is [list of (board.Board, int)]
+            v = max(v, self.min_value(successor[0], local_alpha, local_beta))
+            if v >= local_beta:
+                return v
+            local_alpha = max(local_alpha, v)
+            #successor is [list of (board.Board, int)]
         return v
 
-    def min_value(self, brd):
+    def min_value(self, brd, alpha, beta):
         # game is over, it is a terminal state, check utility
-        # test1 = len(brd.free_cols())
-        # test2 = brd.get_outcome()
+        local_alpha = alpha
+        local_beta = beta
         if (len(brd.free_cols()) == 0 or brd.get_outcome() != 0):
             return self.utility(brd)
         v = float('inf')
         for [successor, col] in self.get_successors(brd):
-            v = min(v, self.max_value(successor))
+            v = min(v, self.max_value(successor, local_alpha, local_beta))
+            if v <= local_alpha:
+                return v
+            local_beta = min(local_beta, v)
         return v
 
 
+    #TODO make not suck
     def utility(self, brd):
         i = 0
         for row in brd.board:

@@ -28,9 +28,9 @@ random.seed(1)
 # Random vs. AlphaBeta
 #
 g = game.Game(4, # width
-              4, # height
-              3, # tokens in a row to win
-              aba.AlphaBetaAgent("rivalbeta", 4),        # player 1
+              5, # height
+              4, # tokens in a row to win
+              agent.RandomAgent("random"),          # player 1
               aba.AlphaBetaAgent("alphabeta", 4)) # player 2
 
 #
