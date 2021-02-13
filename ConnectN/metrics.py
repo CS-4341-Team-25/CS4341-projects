@@ -47,4 +47,4 @@ class Metrics():
     
     # 
     def getAvgTimePerMove(self):
-        return self.moves / self.total_time
+        return self.total_time / self.moves 

@@ -134,7 +134,7 @@ class AlphaBetaAgent(agent.Agent):
 
         self.metrics.count()
 
-        return utility
+        return utility*1000
 
     def heuristic(self, brd):
         return self.get_potential_wins(brd, self.player)
