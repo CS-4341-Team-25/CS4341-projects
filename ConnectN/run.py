@@ -28,17 +28,17 @@ random.seed(1)
 # Random vs. AlphaBeta
 #
 g = game.Game(4, # width
-              5, # height
-              4, # tokens in a row to win
+              4, # height
+              3, # tokens in a row to win
               agent.RandomAgent("random"),          # player 1
               aba.AlphaBetaAgent("alphabeta", 4)) # player 2
 
 #
 # Human vs. AlphaBeta
 #
-# g = game.Game(4, # width
-#               4, # height
-#               3, # tokens in a row to win
+# g = game.Game(6, # width
+#               7, # height
+#               4, # tokens in a row to win
 #               agent.InteractiveAgent("human"),    # player 1
 #               aba.AlphaBetaAgent("alphabeta", 4)) # player 2
 

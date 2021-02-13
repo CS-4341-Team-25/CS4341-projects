@@ -46,7 +46,7 @@ class AlphaBetaAgent(agent.Agent):
         for newBrd,newCol in self.get_successors(brd):
             cols_checked += 1
             
-            nextScore = self.min_value(newBrd, float('-inf'), float('inf'))
+            nextScore = self.min_value(newBrd, float('-inf'), float('inf'), 0)
             if nextScore > bestScore:
                 bestScore = nextScore
                 bestCol = newCol
@@ -78,31 +78,35 @@ class AlphaBetaAgent(agent.Agent):
         print("Moves to win ", self.metrics.moves)
         print("Total nodes checked: ", self.metrics.total_nodes_checked)
 
-    def max_value(self, brd, alpha, beta):
+    def max_value(self, brd, alpha, beta, depth):
     #def max_value(self, brd):
         # game is over, it is a terminal state, check utility
         local_alpha = alpha
         local_beta = beta
         if ((len(brd.free_cols()) == 0) or (brd.get_outcome())) != 0:
             return self.utility(brd)
+        if (depth > self.max_depth):
+            return self.heuristic(brd)
         v = float('-inf')
         for successor in self.get_successors(brd):
-            v = max(v, self.min_value(successor[0], local_alpha, local_beta))
+            v = max(v, self.min_value(successor[0], local_alpha, local_beta, depth + 1))
             if v >= local_beta:
                 return v
             local_alpha = max(local_alpha, v)
             #successor is [list of (board.Board, int)]
         return v
 
-    def min_value(self, brd, alpha, beta):
+    def min_value(self, brd, alpha, beta, depth):
         # game is over, it is a terminal state, check utility
         local_alpha = alpha
         local_beta = beta
         if (len(brd.free_cols()) == 0 or brd.get_outcome() != 0):
             return self.utility(brd)
+        if (depth > self.max_depth):
+            return self.heuristic(brd)
         v = float('inf')
         for [successor, col] in self.get_successors(brd):
-            v = min(v, self.max_value(successor, local_alpha, local_beta))
+            v = min(v, self.max_value(successor, local_alpha, local_beta, depth + 1))
             if v <= local_alpha:
                 return v
             local_beta = min(local_beta, v)
@@ -132,7 +136,46 @@ class AlphaBetaAgent(agent.Agent):
 
         return utility
 
+    def heuristic(self, brd):
+        return self.get_potential_wins(brd, self.player)
+        # center columns weighted more
+        # numberInARow * number open on either end
 
+    def get_potential_wins(self, brd, player):
+        """Return total number of potential wins for us"""
+        output = 0
+        for x in range(brd.w):
+            for y in range(brd.h):
+                if (brd.board[y][x] == player): 
+                    output += self.any_potential_line_at(brd, player, x,y)
+        return output
+
+    def any_potential_line_at(self, brd, player, x, y):
+        """Return True if a line of n number of identical tokens are ready to be played starting at (x,y) in any direction"""
+        return (self.potential_line_at(brd, player, x, y, 1, 0) or # Horizontal
+                self.potential_line_at(brd, player, x, y, 0, 1) or # Vertical
+                self.potential_line_at(brd, player, x, y, 1, 1) or # Diagonal up
+                self.potential_line_at(brd, player, x, y, 1, -1)) # Diagonal down
+
+    def potential_line_at(self, brd, player, x, y, dx, dy):
+        """Return number of n-in-a-rows that could be played starting at (x,y) in direction (dx,dy)"""
+        # Avoid out-of-bounds errors
+        if ((x + (brd.n-1) * dx >= brd.w) or
+            (y + (brd.n-1) * dy < 0) or (y + (brd.n-1) * dy >= brd.h)):
+            return 0
+        # Go through elements
+        enemy = 1
+        if player == 1:
+            enemy = 2
+            
+        tokens_in_range_n = 0
+        for i in range(1, brd.n): # check for tokens in range n
+            if brd.board[y + i*dy][x + i*dx] == enemy:
+                return 0
+            if brd.board[y + i*dy][x + i*dx] == player:
+                tokens_in_range_n += 1
+        return tokens_in_range_n
+    
     
     # Get the successors of the given board.
     #
