@@ -12,13 +12,20 @@ class AlphaBetaAgent(agent.Agent):
     #
     # PARAM [string] name:      the name of this player
     # PARAM [int]    max_depth: the maximum search depth
-    def __init__(self, name, max_depth):
+    # def __init__(self, name, max_depth):
+    #     super().__init__(name)
+    #     # Max search depth
+    #     self.max_depth = max_depth
+    #     self.count = 0
+    #     self.metrics = Metrics()
+
+    def __init__(self, name, max_depth, heuristic = 0):
         super().__init__(name)
         # Max search depth
         self.max_depth = max_depth
         self.count = 0
         self.metrics = Metrics()
-
+        self.heuristic_val = heuristic
     # Pick a column.
     #
     # PARAM [board.Board] brd: the current board state
@@ -29,7 +36,7 @@ class AlphaBetaAgent(agent.Agent):
         """Search for the best move (choice of column for the token)"""
         # Your code here
         cols = brd.free_cols()
-        print("I am think ...")
+        # print("I am think ...")
         choice = self.alphabeta_decision(brd)
         self.print_metrics()
         return choice
@@ -46,11 +53,11 @@ class AlphaBetaAgent(agent.Agent):
         for newBrd,newCol in self.get_successors(brd):
             cols_checked += 1
             
-            nextScore = self.min_value(newBrd, float('-inf'), float('inf'), 0)
+            nextScore = self.min_value(newBrd, float('-inf'), float('inf'), 1)
             if nextScore > bestScore:
                 bestScore = nextScore
                 bestCol = newCol
-            print("Checked " + str(cols_checked) + " node(s)")
+            # print("Checked " + str(cols_checked) + " node(s)")
         elapsed_time = self.metrics.end_timer()
         return bestCol
 
@@ -72,14 +79,15 @@ class AlphaBetaAgent(agent.Agent):
 
     # Print statements for measuring metrics for each move and game overall
     def print_metrics(self):
-        print("Think complete! Max elapsed time: ", self.metrics.max_elapsed)
-        print("Avg nodes/s ", self.metrics.getNodePerSec())
-        print("Avg time per move ", self.metrics.getAvgTimePerMove())
-        print("Moves to win ", self.metrics.moves)
-        print("Total nodes checked: ", self.metrics.total_nodes_checked)
+        pass
+        # print("Think complete! Max elapsed time: ", self.metrics.max_elapsed)
+        # print("Avg nodes/s ", self.metrics.getNodePerSec())
+        # print("Avg time per move ", self.metrics.getAvgTimePerMove())
+        # print("Moves to win ", self.metrics.moves)
+        # print("Total nodes checked: ", self.metrics.total_nodes_checked)
 
     def max_value(self, brd, alpha, beta, depth):
-    #def max_value(self, brd):
+        #def max_value(self, brd):
         # game is over, it is a terminal state, check utility
         local_alpha = alpha
         local_beta = beta
@@ -88,8 +96,8 @@ class AlphaBetaAgent(agent.Agent):
         if (depth > self.max_depth):
             return self.heuristic(brd)
         v = float('-inf')
-        for successor in self.get_successors(brd):
-            v = max(v, self.min_value(successor[0], local_alpha, local_beta, depth + 1))
+        for successor, col in self.get_successors(brd):
+            v = max(v, self.min_value(successor, local_alpha, local_beta, depth + 1))
             if v >= local_beta:
                 return v
             local_alpha = max(local_alpha, v)
@@ -105,7 +113,7 @@ class AlphaBetaAgent(agent.Agent):
         if (depth > self.max_depth):
             return self.heuristic(brd)
         v = float('inf')
-        for [successor, col] in self.get_successors(brd):
+        for successor, col in self.get_successors(brd):
             v = min(v, self.max_value(successor, local_alpha, local_beta, depth + 1))
             if v <= local_alpha:
                 return v
@@ -133,13 +141,35 @@ class AlphaBetaAgent(agent.Agent):
             utility = -utility
 
         self.metrics.count()
-
+        # always weight utility score higher than heuristic-generated score 
         return utility*1000
 
+    # Return the result from the heuristic we are using 
     def heuristic(self, brd):
+        if self.heuristic_val == 0:
+            return self.heuristic0(brd)
+        elif self.heuristic_val == 1:
+            return self.heuristic1(brd)
+        elif self.heuristic_val == 2:
+            return self.heuristic0(brd) # Both have same mechanic for get potential wins, difference is taken in get potential line at 
+        elif self.heuristic_val == 3:
+            return self.heuristic0(brd)
+        return 0
+        
+    # Checks for potential in-a-rows, linear +1 score growth each time it finds own token
+    def heuristic0(self, brd): 
         return self.get_potential_wins(brd, self.player)
         # center columns weighted more
         # numberInARow * number open on either end
+
+    
+    def heuristic1(self, brd):
+        # Considers own potential wins but also enemy's wins 
+        enemy = 1
+        if self.player == 1:
+            enemy = 2
+        
+        return self.get_potential_wins(brd, self.player) - self.get_potential_wins(brd, enemy)
 
     def get_potential_wins(self, brd, player):
         """Return total number of potential wins for us"""
@@ -167,14 +197,33 @@ class AlphaBetaAgent(agent.Agent):
         enemy = 1
         if player == 1:
             enemy = 2
-            
-        tokens_in_range_n = 0
+        
+        tokens_in_range_n = 1
+        floating = 0
+
         for i in range(1, brd.n): # check for tokens in range n
             if brd.board[y + i*dy][x + i*dx] == enemy:
                 return 0
             if brd.board[y + i*dy][x + i*dx] == player:
-                tokens_in_range_n += 1
-        return tokens_in_range_n
+                if self.heuristic_val == 3:
+                    z = y+i*dy
+                    while z < brd.h:
+                        if brd.board[z][x + i*dx] != 0:
+                            break
+                        floating += 1
+                        z += 1
+
+
+                if self.heuristic_val == 0:
+                    tokens_in_range_n += 1
+                elif self.heuristic_val == 2: 
+                    tokens_in_range_n *= 2
+                    
+                
+                
+        return tokens_in_range_n - 1 - floating*0.1
+
+    
     
     
     # Get the successors of the given board.
@@ -183,7 +232,6 @@ class AlphaBetaAgent(agent.Agent):
     # RETURN [list of (board.Board, int)]: a list of the successor boards,
     #                                      along with the column where the last
     #                                      token was added in it
-    #TODO implement some sort of heuristic for move ordering
     def get_successors(self, brd):
         """Returns the reachable boards from the given board brd. The return value is a tuple (new board state, column number where last token was added)."""
         # Get possible actions
@@ -193,6 +241,9 @@ class AlphaBetaAgent(agent.Agent):
             return []
         # Make a list of the new boards along with the corresponding actions
         succ = []
+        def sortFun(e):
+            return len(freecols)/2 - e
+        freecols.sort(key=sortFun)
         for col in freecols:
             # Clone the original board
             nb = brd.copy()
@@ -202,3 +253,7 @@ class AlphaBetaAgent(agent.Agent):
             # Add board to list of successors
             succ.append((nb,col))
         return succ
+        
+    # To be called by tournament in between games, just for testing / metrics purposes 
+    def reset_agent_metrics(self):
+        self.metrics.reset_metrics()

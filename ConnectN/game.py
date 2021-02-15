@@ -34,10 +34,10 @@ class Game(object):
         # Current player
         p = 0
         while self.board.free_cols() and self.board.get_outcome() == 0:
-            self.board.print_it()
+            # self.board.print_it()
             # Copy board so player can't modify it
             x = self.players[p].go(self.board.copy())
-            print(self.players[p].name, "move:", x)
+            # print(self.players[p].name, "move:", x)
             if not x in self.board.free_cols():
                 print("Illegal move")
                 outcome = 1
@@ -53,9 +53,9 @@ class Game(object):
             else:
                 p = 0
         # Print game outcome
-        self.board.print_it()
+        # self.board.print_it()
         outcome = self.board.get_outcome()
-        print("Game over!")
+        # print("Game over!")
         if outcome == 0:
             print("It's a tie!")
         else:
@@ -74,10 +74,12 @@ class Game(object):
         # Current player
         p = 0
         while self.board.free_cols() and self.board.get_outcome() == 0:
+            self.board.print_it()
             # Get start time
             st = time.time()
             # Make move and copy board so player can't modify it
             x = self.players[p].go(self.board.copy())
+            print(self.players[p].name, "move:", x)
             # Get elapsed time
             et = time.time() - st
             # Is the move legal and within the time limit?
@@ -94,6 +96,7 @@ class Game(object):
             else:
                 p = 0
         # Return game outcome
+        self.board.print_it()
         return self.board.get_outcome()
 
     # Execute a timed game.

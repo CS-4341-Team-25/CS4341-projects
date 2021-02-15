@@ -1,4 +1,5 @@
 import time
+import pandas
 
 class Metrics():
 
@@ -13,6 +14,10 @@ class Metrics():
         self.moves = 0
         self.debug = False
         self.max_elapsed = 0
+
+        self.wins = 0
+        self.losses = 0
+        self.total_moves = 0
         
     # Start timer, record current time from perf_counter()  
     def start_timer(self):
@@ -48,3 +53,35 @@ class Metrics():
     # 
     def getAvgTimePerMove(self):
         return self.total_time / self.moves 
+    
+    def win(self):
+        self.wins += 1
+        self.total_moves += self.moves
+        
+    def lose(self):
+        self.losses += 1
+
+    def get_stats(self):
+        winrate = self.wins/(self.wins + self.losses)
+        
+        df = pandas.DataFrame(columns=['Winrate', 'Avg Moves', 'Max Time'])
+
+        return df
+
+    # Reset all variables, must call in between matches for tournament
+    # For metrics / testing purposes only    
+    def reset_metrics(self): 
+        self.nodesChecked = 0 
+        self.total_nodes_checked = 0
+        self.start_time = 0
+        self.end_time = 0
+        self.total_time = 0
+        self.elapsed = 0
+        self.moves = 0
+        self.max_elapsed = 0
+        self.wins = 0
+        self.losses = 0
+        self.total_moves = 0
+
+
+
