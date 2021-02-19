@@ -23,7 +23,7 @@ def play_game(w, h, n, l, p1, p2):
                   p1, # player 1
                   p2) # player 2
     o = g.timed_go(l)
-    #print("    GAME:", p1.name, "vs.", p2.name, ": ", end='')
+    # print("    GAME:", p1.name, "vs.", p2.name, ": ", end='')
     # if o == 0:
     #     print("tie")
     # elif o == 1:
@@ -84,8 +84,8 @@ def play_tournament(w, h, n, l, ps):
     scores = {}
     for p in ps:
         scores[p] = 0
-    n = len(ps)
-    total_num_games = factorial(n)/factorial(n-2)
+    the_n = len(ps)
+    total_num_games = factorial(the_n)/factorial(the_n-2)/2
     current_game_number = 0
     # Play
     for i in range(0, len(ps)-1):
@@ -93,7 +93,7 @@ def play_tournament(w, h, n, l, ps):
             (s1, s2) = play_match(w, h, n, l, ps[i], ps[j])
             scores[ps[i]] = scores[ps[i]] + s1
             scores[ps[j]] = scores[ps[j]] + s2
-            current_game_number+=1
+            current_game_number+=1 
             print("Progress: " + str(100*(current_game_number / total_num_games)))
     print("TOURNAMENT END")
     # Calculate and print scores
@@ -109,7 +109,7 @@ def play_tournament(w, h, n, l, ps):
 # Set random seed for reproducibility
 random.seed(1)
 
-depth = 1
+depth = 2
 # Construct list of agents in the tournament
 # agents = [
 #     # aba.AlphaBetaAgent("aba", 4),
@@ -118,15 +118,16 @@ depth = 1
 #     # agent.RandomAgent("random3"),
 #     agent.RandomAgent("poor-random-guy"),
 # ]
-agents = [ aba.AlphaBetaAgent("alpha-beta-" + str(a) + "-" + str(b) + "-" + str(c), depth, a, b, c, d, e) 
-for a in range(2,5) 
-for b in range(0,3) 
+agents = [ aba.AlphaBetaAgent("alpha-beta-" + str(a) + "-" + str(b) + "-" + str(c) + "-" + str(d) + "-" + str(e), depth, a, b, c, d, e) 
+for a in range(0,5)
+for b in range(0,4) 
 for c in range(0,3) 
-for d in range(0,3)
-for e in range(0,3)]
-agents.append(agent.RandomAgent("poor-random-guy :("))
+for d in range(1,3)
+for e in range(0,3)
+]
 
-# Run!
+agents.append(agent.RandomAgent("poor-random-guy :("))
+# Run! 
 play_tournament(6,      # board width
                 6,      # board height
                 4,      # tokens in a row to win

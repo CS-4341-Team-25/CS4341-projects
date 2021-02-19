@@ -19,12 +19,7 @@ class AlphaBetaAgent(agent.Agent):
     #     self.count = 0
     #     self.metrics = Metrics()
 
-    def __init__(self, name, max_depth, 
-    weight_self_potential = 1, 
-    weight_enemy_potential = 0, 
-    weight_in_a_row = 0, 
-    multiplier_growth_rate = 0, 
-    weight_token_height = 0):
+    def __init__(self, name, max_depth, weight_self_potential = 1, weight_enemy_potential = 0, weight_in_a_row = 1, multiplier_growth_rate = 1, weight_token_height = 0):
         super().__init__(name)
         # Max search depth
         self.max_depth = max_depth
@@ -35,6 +30,7 @@ class AlphaBetaAgent(agent.Agent):
         self.weight_in_a_row = weight_in_a_row # weight for how many in-a-rows we have
         self.multiplier_growth_rate = multiplier_growth_rate
         self.weight_token_height = weight_token_height
+        print((self.weight_self_potential, self.weight_enemy_potential, self.weight_in_a_row, self.weight_token_height, self.multiplier_growth_rate))
     
     # Pick a column.
     #
@@ -155,7 +151,6 @@ class AlphaBetaAgent(agent.Agent):
         return utility*1000
 
     def heuristic(self, brd):
-        # Considers own potential wins but also enemy's wins 
         enemy = 1
         if self.player == 1:
             enemy = 2
@@ -163,7 +158,8 @@ class AlphaBetaAgent(agent.Agent):
         factor_self_potential =  self.get_potential_wins(brd, self.player)
         factor_enemy_potential = self.get_potential_wins(brd, enemy)
 
-        return self.weight_self_potential * factor_self_potential -  self.weight_enemy_potential * factor_enemy_potential
+        h = self.weight_self_potential * factor_self_potential -  self.weight_enemy_potential * factor_enemy_potential
+        return h
 
     def get_potential_wins(self, brd, player):
         """Return total number of potential wins for us"""
@@ -200,7 +196,7 @@ class AlphaBetaAgent(agent.Agent):
                 return 0
             if brd.board[y + i*dy][x + i*dx] == player:
                 y_pos = y+i*dy
-                if (brd.board[y_pos + 1] < len(brd.board) and brd.board[y_pos + 1][x+i*dx] == 0):
+                if (y_pos + 1 < len(brd.board) and brd.board[y_pos + 1][x+i*dx] == 0):
                     token_height += 1          
                 linear_growth_rate = 1
                 factor_in_a_row = self.multiplier_growth_rate * (factor_in_a_row + linear_growth_rate)
