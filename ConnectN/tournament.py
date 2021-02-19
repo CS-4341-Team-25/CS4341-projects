@@ -2,6 +2,7 @@ import random
 import game
 import agent
 import alpha_beta_agent as aba
+from math import factorial
 
 ######################
 # Play a single game #
@@ -22,13 +23,13 @@ def play_game(w, h, n, l, p1, p2):
                   p1, # player 1
                   p2) # player 2
     o = g.timed_go(l)
-    print("    GAME:", p1.name, "vs.", p2.name, ": ", end='')
-    if o == 0:
-        print("tie")
-    elif o == 1:
-        print(p1.name, "won!")
-    else:
-        print(p2.name, "won!")
+    #print("    GAME:", p1.name, "vs.", p2.name, ": ", end='')
+    # if o == 0:
+    #     print("tie")
+    # elif o == 1:
+    #     print(p1.name, "won!")
+    # else:
+    #     print(p2.name, "won!")
     return o
 
 ###########################################################
@@ -45,7 +46,7 @@ def play_game(w, h, n, l, p1, p2):
 # PARAM [agent.Agent] p1: the agent for Player 1
 # PARAM [agent.Agent] p2: the agent for Player 2
 def play_match(w, h, n, l, p1, p2):
-    print("  MATCH:", p1.name, "vs.", p2.name)
+    #print("  MATCH:", p1.name, "vs.", p2.name)
     # Play the games
     o1 = play_game(w, h, n, l, p1, p2)
     o2 = play_game(w, h, n, l, p2, p1)
@@ -83,12 +84,17 @@ def play_tournament(w, h, n, l, ps):
     scores = {}
     for p in ps:
         scores[p] = 0
+    n = len(ps)
+    total_num_games = factorial(n)/factorial(n-2)
+    current_game_number = 0
     # Play
     for i in range(0, len(ps)-1):
         for j in range(i + 1, len(ps)):
             (s1, s2) = play_match(w, h, n, l, ps[i], ps[j])
             scores[ps[i]] = scores[ps[i]] + s1
             scores[ps[j]] = scores[ps[j]] + s2
+            current_game_number+=1
+            print("Progress: " + str(100*(current_game_number / total_num_games)))
     print("TOURNAMENT END")
     # Calculate and print scores
     sscores = sorted( ((v,k.name) for k,v in scores.items()), reverse=True)
@@ -103,21 +109,25 @@ def play_tournament(w, h, n, l, ps):
 # Set random seed for reproducibility
 random.seed(1)
 
+depth = 1
 # Construct list of agents in the tournament
-agents = [
-    # aba.AlphaBetaAgent("aba", 4),
-    # agent.RandomAgent("random1"),
-    # agent.RandomAgent("random2"),
-    # agent.RandomAgent("random3"),
-    agent.RandomAgent("poor-random-guy"),
-    aba.AlphaBetaAgent("alphabeta-0", 3, 0),
-    aba.AlphaBetaAgent("alphabeta-1", 3, 1),
-    aba.AlphaBetaAgent("alphabeta-2", 3, 2),
-    aba.AlphaBetaAgent("alphabeta-3", 3, 3)
-]
+# agents = [
+#     # aba.AlphaBetaAgent("aba", 4),
+#     # agent.RandomAgent("random1"),
+#     # agent.RandomAgent("random2"),
+#     # agent.RandomAgent("random3"),
+#     agent.RandomAgent("poor-random-guy"),
+# ]
+agents = [ aba.AlphaBetaAgent("alpha-beta-" + str(a) + "-" + str(b) + "-" + str(c), depth, a, b, c, d, e) 
+for a in range(2,5) 
+for b in range(0,3) 
+for c in range(0,3) 
+for d in range(0,3)
+for e in range(0,3)]
+agents.append(agent.RandomAgent("poor-random-guy :("))
 
 # Run!
-play_tournament(7,      # board width
+play_tournament(6,      # board width
                 6,      # board height
                 4,      # tokens in a row to win
                 15,     # time limit in seconds

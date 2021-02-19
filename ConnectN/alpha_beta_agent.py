@@ -19,13 +19,23 @@ class AlphaBetaAgent(agent.Agent):
     #     self.count = 0
     #     self.metrics = Metrics()
 
-    def __init__(self, name, max_depth, heuristic = 0):
+    def __init__(self, name, max_depth, 
+    weight_self_potential = 1, 
+    weight_enemy_potential = 0, 
+    weight_in_a_row = 0, 
+    multiplier_growth_rate = 0, 
+    weight_token_height = 0):
         super().__init__(name)
         # Max search depth
         self.max_depth = max_depth
         self.count = 0
         self.metrics = Metrics()
-        self.heuristic_val = heuristic
+        self.weight_self_potential = weight_self_potential # weight for how many potential in-a-rows we have
+        self.weight_enemy_potential = weight_enemy_potential # weight for how many potential in-a-rows enemy has
+        self.weight_in_a_row = weight_in_a_row # weight for how many in-a-rows we have
+        self.multiplier_growth_rate = multiplier_growth_rate
+        self.weight_token_height = weight_token_height
+    
     # Pick a column.
     #
     # PARAM [board.Board] brd: the current board state
@@ -144,32 +154,16 @@ class AlphaBetaAgent(agent.Agent):
         # always weight utility score higher than heuristic-generated score 
         return utility*1000
 
-    # Return the result from the heuristic we are using 
     def heuristic(self, brd):
-        if self.heuristic_val == 0:
-            return self.heuristic0(brd)
-        elif self.heuristic_val == 1:
-            return self.heuristic1(brd)
-        elif self.heuristic_val == 2:
-            return self.heuristic0(brd) # Both have same mechanic for get potential wins, difference is taken in get potential line at 
-        elif self.heuristic_val == 3:
-            return self.heuristic0(brd)
-        return 0
-        
-    # Checks for potential in-a-rows, linear +1 score growth each time it finds own token
-    def heuristic0(self, brd): 
-        return self.get_potential_wins(brd, self.player)
-        # center columns weighted more
-        # numberInARow * number open on either end
-
-    
-    def heuristic1(self, brd):
         # Considers own potential wins but also enemy's wins 
         enemy = 1
         if self.player == 1:
             enemy = 2
         
-        return self.get_potential_wins(brd, self.player) - self.get_potential_wins(brd, enemy)
+        factor_self_potential =  self.get_potential_wins(brd, self.player)
+        factor_enemy_potential = self.get_potential_wins(brd, enemy)
+
+        return self.weight_self_potential * factor_self_potential -  self.weight_enemy_potential * factor_enemy_potential
 
     def get_potential_wins(self, brd, player):
         """Return total number of potential wins for us"""
@@ -198,33 +192,21 @@ class AlphaBetaAgent(agent.Agent):
         if player == 1:
             enemy = 2
         
-        tokens_in_range_n = 1
-        floating = 0
+        factor_in_a_row = 1
+        token_height = 0
 
         for i in range(1, brd.n): # check for tokens in range n
             if brd.board[y + i*dy][x + i*dx] == enemy:
                 return 0
             if brd.board[y + i*dy][x + i*dx] == player:
-                if self.heuristic_val == 3:
-                    z = y+i*dy
-                    while z < brd.h:
-                        if brd.board[z][x + i*dx] != 0:
-                            break
-                        floating += 1
-                        z += 1
-
-
-                if self.heuristic_val == 0:
-                    tokens_in_range_n += 1
-                elif self.heuristic_val == 2: 
-                    tokens_in_range_n *= 2
-                    
+                y_pos = y+i*dy
+                if (brd.board[y_pos + 1] < len(brd.board) and brd.board[y_pos + 1][x+i*dx] == 0):
+                    token_height += 1          
+                linear_growth_rate = 1
+                factor_in_a_row = self.multiplier_growth_rate * (factor_in_a_row + linear_growth_rate)
                 
-                
-        return tokens_in_range_n - 1 - floating*0.1
+        return self.weight_in_a_row * factor_in_a_row - self.weight_token_height * token_height
 
-    
-    
     
     # Get the successors of the given board.
     #
