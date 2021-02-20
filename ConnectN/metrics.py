@@ -1,5 +1,4 @@
 import time
-import pandas
 
 class Metrics():
 
@@ -61,12 +60,6 @@ class Metrics():
     def lose(self):
         self.losses += 1
 
-    def get_stats(self):
-        winrate = self.wins/(self.wins + self.losses)
-        
-        df = pandas.DataFrame(columns=['Winrate', 'Avg Moves', 'Max Time'])
-
-        return df
 
     # Reset all variables, must call in between matches for tournament
     # For metrics / testing purposes only    

@@ -109,21 +109,35 @@ def play_tournament(w, h, n, l, ps):
 # Set random seed for reproducibility
 random.seed(1)
 
-depth = 2
+depth = 4
 # Construct list of agents in the tournament
 # agents = [
-#     # aba.AlphaBetaAgent("aba", 4),
-#     # agent.RandomAgent("random1"),
-#     # agent.RandomAgent("random2"),
-#     # agent.RandomAgent("random3"),
-#     agent.RandomAgent("poor-random-guy"),
+#     aba.AlphaBetaAgent("alpha-beta-3-2-3-1-1", depth, 3, 2, 3, 1, 1),
+#     aba.AlphaBetaAgent("alpha-beta-3-2-2-1-1", depth, 3, 2, 2, 1, 1),
+#     aba.AlphaBetaAgent("alpha-beta-3-1-2-1-1", depth, 3, 1, 2, 1, 1),
+    
+#     aba.AlphaBetaAgent("alpha-beta-3-0-1-1-1", depth, 3, 0, 1, 1, 1),
+#     aba.AlphaBetaAgent("alpha-beta-3-3-1-1-1", depth, 3, 3, 1, 1, 1),
+
+#     aba.AlphaBetaAgent("alpha-beta-4-0-2-1-1", depth, 4,0,2,1,1),
+#     aba.AlphaBetaAgent("alpha-beta-1-0-2-1-1", depth, 1,0,2,1,1),
+#     agent.RandomAgent("poor-random-guy :(")
 # ]
+# agents = [ aba.AlphaBetaAgent("alpha-beta-" + str(a) + "-" + str(b) + "-" + str(c) + "-" + str(d) + "-" + str(e), depth, a, b, c, d, e) 
+# for a in [3]
+# for b in range(0,4) 
+# for c in range(1,4) 
+# for d in [1]
+# for e in range(0,2)
+# ]
+
+d = 1
+e = 1
+
 agents = [ aba.AlphaBetaAgent("alpha-beta-" + str(a) + "-" + str(b) + "-" + str(c) + "-" + str(d) + "-" + str(e), depth, a, b, c, d, e) 
-for a in range(0,5)
+for a in range(3,6)
 for b in range(0,4) 
-for c in range(0,3) 
-for d in range(1,3)
-for e in range(0,3)
+for c in range(1,3) 
 ]
 
 agents.append(agent.RandomAgent("poor-random-guy :("))
