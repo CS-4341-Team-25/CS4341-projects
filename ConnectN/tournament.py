@@ -135,12 +135,13 @@ d = 1
 e = 1
 
 agents = [ aba.AlphaBetaAgent("alpha-beta-" + str(a) + "-" + str(b) + "-" + str(c) + "-" + str(d) + "-" + str(e), depth, a, b, c, d, e) 
-for a in range(3,6)
-for b in range(0,4) 
+for a in range(3,4)
+for b in range(0,2) 
 for c in range(1,3) 
 ]
 
 agents.append(agent.RandomAgent("poor-random-guy :("))
+agents.append(aba.AlphaBetaAgent("defaults", depth))
 # Run! 
 play_tournament(6,      # board width
                 6,      # board height
